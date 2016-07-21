@@ -10,26 +10,24 @@ var express = require('express');
 var app = express();
 var server = require('http').createServer(app);
 var io = require('socket.io')(server);
+
+// - setup redis client
 var redis = require('redis');
-var redisclient;
+console.log('Creating a redis client');
+var redisclient = redis.createClient(redis_port, redis_host);
+console.log('Subscribing to redis topic %s', subscribe_topic);
+redisclient.subscribe(subscribe_topic);
+redisclient.on('message', function (channel, message) {
+    if (channel == subscribe_topic) {
+        console.log('message received %s', message);
+        io.sockets.emit('data', message);
+    }
+});
 
 // - setup webapp routing
 app.use(express.static(__dirname + '/public'));
 app.use('/jquery', express.static(__dirname + '/node_modules/jquery/dist/'));
-
-io.on('connection', function (socket) {
-
-    console.log('Creating redis client for %s:%d', redis_host, redis_port);
-    redisclient = redis.createClient(redis_port, redis_host);
-    console.log('Subscribing to redis topic %s', subscribe_topic);
-    redisclient.subscribe(subscribe_topic);
-    redisclient.on('message', function (channel, message) {
-        if (channel == subscribe_topic) {
-            console.log('message received %s', message);
-        }
-    });
-
-});
+app.use('/d3', express.static(__dirname + '/node_modules/d3/build/'));
 
 server.listen(port, function () {
     console.log('Server started at port %d.', port);

@@ -3,6 +3,7 @@
   "version": "0.0.1",
   "description": "simple web app to visualize data",
   "dependencies": {
+    "d3": "^4.1.1",
     "express": "^4.14.0",
     "hiredis": "^0.5.0",
     "jquery": "^3.1.0",
