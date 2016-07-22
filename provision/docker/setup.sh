@@ -120,7 +120,6 @@ fi
 # - run the redis
 #
 echo "start redis"
-echo "start kafka"
 RUNNING=$(docker inspect --format="{{ .State.Running }}" redis 2> /dev/null)
 if [[ $? -eq 1 ]]; then
     docker run \
@@ -131,28 +130,3 @@ if [[ $? -eq 1 ]]; then
 elif [[ ${RUNNING} == "false" ]]; then
     docker start redis
 fi
-
-docker run \
-        -d \
-        -p 5051:5051 \
-        -p 40000-62000:10000-32000 \
-        -e MESOS_HOSTNAME="`docker-machine ip beta`" \
-        -e MESOS_MASTER="zk://`docker-machine ip alpha`:2181/mesos" \
-        -e MESOS_IP=`docker-machine ip beta` \
-        -e MESOS_LOG_DIR="/var/log/mesos" \
-        -e MESOS_LOGGING_LEVEL="INFO" \
-        -e MESOS_PORT=5051 \
-        -e MESOS_DEFAULT_ROLE="slave_public" \
-        -e MESOS_RESOURCES="cpus:128;mem:204800;ports:[10000-32000]" \
-        -e MESOS_CONTAINERIZERS="docker" \
-        -e MESOS_EXECUTOR_REGISTRATION_TIMEOUT="5mins" \
-        -e MESOS_DOCKER_SOCK="/var/run/docker.sock" \
-        -e MESOS_CGROUPS_HIERARCHY="/sys/fs/cgroup" \
-        -v /etc:/etc \
-        -v /sys:/sys \
-        -v /cgroup:/cgroup \
-        -v /var/run/docker.sock:/var/run/docker.sock \
-        -v /usr/local/bin/docker:/bin/docker \
-        --name mesos-slave \
-        --net "host" \
-        mesosphere/mesos-slave:0.28.0-2.0.16.ubuntu1404
